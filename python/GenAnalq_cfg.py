@@ -24,7 +24,8 @@ process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
     fileNames = cms.untracked.vstring(
         options.files        
-    )
+    ),
+    #                         firstEvent = cms.untracked.uint32(908)
 )
 
 process.TFileService=cms.Service("TFileService",

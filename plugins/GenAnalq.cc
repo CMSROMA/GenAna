@@ -99,8 +99,10 @@ class GenAnalq : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
   int event_;
   float LQ_E_,LQ_mass_, LQ_pt_, LQ_eta_, LQ_phi_, LQ_id_, LQ_px_, LQ_py_, LQ_pz_;
   float gamma_E_,gamma_mass_, gamma_pt_, gamma_eta_, gamma_phi_, gamma_id_;
+  float lepFromGamma_E_, lepFromGamma_mass_, lepFromGamma_pt_, lepFromGamma_eta_, lepFromGamma_phi_, lepFromGamma_id_;
   float pIn_E_, pIn_mass_, pIn_px_, pIn_py_, pIn_pz_, pIn_id_;
   float pOut_E_, pOut_mass_, pOut_px_, pOut_py_, pOut_pz_, pOut_id_;
+  float xi_p_, xi_LQ_, xi_LQ_wrong_;
   float lepIn_E_,lepIn_mass_, lepIn_pt_, lepIn_eta_, lepIn_phi_, lepIn_id, lepIn_id_, lepIn_px_, lepIn_py_, lepIn_pz_;
   float qIn_E_,qIn_mass_, qIn_pt_, qIn_eta_, qIn_phi_, qIn_id_, qIn_px_, qIn_py_, qIn_pz_;
   float lepOut_E_,lepOut_mass_, lepOut_pt_, lepOut_eta_, lepOut_phi_, lepOut_id_;
@@ -185,7 +187,7 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    if (!iEvent.isRealData())
      iEvent.getByToken(genJetsAK8InputToken_,genJetsAK8);
 
-   TLorentzVector LQ, pIn, pOut, Gamma, LepIn, QuarkIn, LepOut, QuarkOut;
+   TLorentzVector LQ, pIn, pOut, Gamma, LepFromGamma, LepIn, QuarkIn, LepOut, QuarkOut;
    // p --> p+Gamma , Gamma -->ll ,  l q --> LQ --> l q 
    //Gamma = Photon emitted from one proton (missing in some events?)
    //LepFromGamma = Final state lepton from initial state Gamma 
@@ -196,10 +198,12 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    //QuarkOut = Outgoing quark (daughter of LQ)
 
    event_ = iEvent.id().event();
+   //cout << "----------- Event: " << event_ << endl;
 
    if( genParticles.isValid() ) {
 
      int nLQ = 0;
+     int nLepGamma = 0;
      int nGamma = 0;
      int nLepIn = 0;
      int nQuarkIn = 0;
@@ -208,14 +212,14 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
      for( reco::GenParticleCollection::const_iterator it = genParticles->begin(); it != genParticles->end(); ++it ) 
        {
-
+	 
 	 //LQ
 	 if (it->pdgId()==id_LQ)
 	   {
 	     //LQ.SetPtEtaPhiM(it->pt(),it->eta(),it->phi(),it->mass());	 	     
 	     LQ.SetPxPyPzE(it->px(),it->py(),it->pz(),it->energy());	 	     
 	     nLQ++;
-
+	     
 	     LQ_E_ = LQ.E(); 
 	     LQ_mass_ = LQ.M(); 
 	     LQ_pt_ = LQ.Pt(); 
@@ -226,7 +230,7 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	     LQ_py_ = it->py();  
 	     LQ_pz_ = it->pz();  
 	   }
-
+	 
 	 //Gamma and Proton
 	 if (it->pdgId()==id_photon && it->mother()->pdgId()==id_p)
 	   {
@@ -234,21 +238,21 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	     Gamma.SetPxPyPzE(it->px(),it->py(),it->pz(),it->energy());	 	     
 	     pIn.SetPxPyPzE(it->mother()->px(),it->mother()->py(),it->mother()->pz(),it->mother()->energy());	 	     
 	     nGamma++;
-
+	     
 	     gamma_E_ = Gamma.E(); 
 	     gamma_mass_ = Gamma.M(); 
 	     gamma_pt_ = Gamma.Pt(); 
 	     gamma_eta_ = Gamma.Eta(); 
 	     gamma_phi_ = Gamma.Phi();  
 	     gamma_id_ = it->pdgId();  
-
+	     
 	     pIn_E_ = it->mother()->energy(); 
 	     pIn_mass_ = it->mother()->mass(); 
 	     pIn_px_ = it->mother()->px(); 
 	     pIn_py_ = it->mother()->py(); 
 	     pIn_pz_ = it->mother()->pz();  
 	     pIn_id_ = it->mother()->pdgId();  
-
+	     
 	     pOut = pIn - Gamma;
 	     pOut_E_ = pOut.E(); 
 	     pOut_mass_ = pOut.M(); 
@@ -256,10 +260,53 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	     pOut_py_ = pOut.Py(); 
 	     pOut_pz_ = pOut.Pz(); 
 	     pOut_id_ = pIn_id_; 
+	     
 	   }
+	 
+	 //Final state lepton from Gamma	 
+	 if ( (fabs(it->pdgId())==id_e || fabs(it->pdgId())==id_mu || fabs(it->pdgId())==id_tau) and it->status()==1 )
+	   {
 
+	     if(it->numberOfMothers()>0)
+	       {
+		 const Candidate * thismother = it->mother();
+		 
+		 while(true)
+		   {
+		     if(thismother->numberOfMothers()==0)
+		       break;
+
+		     if(thismother->pdgId()==id_LQ)
+		       break;
+		     
+		     if (thismother->pdgId()==id_photon && thismother->mother()->pdgId()==id_p)
+		       {
+			 //lepton from gamma found
+			 nLepGamma++;
+
+			 LepFromGamma.SetPxPyPzE(it->px(),it->py(),it->pz(),it->energy());	 	     
+
+			 lepFromGamma_E_ = LepFromGamma.E(); 
+			 lepFromGamma_mass_ = LepFromGamma.M(); 
+			 lepFromGamma_pt_ = LepFromGamma.Pt(); 
+			 lepFromGamma_eta_ = LepFromGamma.Eta(); 
+			 lepFromGamma_phi_ = LepFromGamma.Phi();  
+			 lepFromGamma_id_ = it->pdgId();  
+
+			 break;
+		       }
+		     else
+		       {
+			 thismother = thismother->mother();
+		       }
+		   }
+
+	       }
+
+	   }
+	 
 	 //Incoming lepton
-	 if ( (fabs(it->pdgId())==id_e || fabs(it->pdgId())==id_mu || fabs(it->pdgId())==id_tau))
+	 if ( (fabs(it->pdgId())==id_e || fabs(it->pdgId())==id_mu || fabs(it->pdgId())==id_tau) )
 	   {
 
 	     int dauId = -999;
@@ -348,8 +395,23 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	     qOut_id_ = it->pdgId();   
 	   }
 
+	 if(nGamma>0)
+	   {
+	     xi_p_ = 1 - ( pOut.Pz() / pIn.Pz() ) ; 
+	     if( pOut.Pz() > 0 )
+	       {
+		 xi_LQ_ = ( LQ.E() + LQ.Pz() ) / fabs( 2*pIn.Pz() ) ; 
+		 xi_LQ_wrong_ = ( LQ.E() - LQ.Pz() ) / fabs( 2*pIn.Pz() ) ; 
+	       } 
+	     else
+	       {
+		 xi_LQ_ = ( LQ.E() - LQ.Pz() ) / fabs( 2*pIn.Pz() ) ; 
+		 xi_LQ_wrong_ = ( LQ.E() + LQ.Pz() ) / fabs( 2*pIn.Pz() ) ; 
+	       }
+	   }
+
 	 //Exit from loop when particles are found
-	 if(nLQ>0 && nGamma>0 && nLepIn>0 && nQuarkIn>0 && nLepOut>0 && nQuarkOut>0)
+	 if(nLQ>0 && nLepGamma>0 && nGamma>0 && nLepIn>0 && nQuarkIn>0 && nLepOut>0 && nQuarkOut>0)
 	   break;	   
 	 
        }// end loop over gen particles
@@ -420,6 +482,13 @@ int GenAnalq::DefineBranches()
   outTree_->Branch("gamma_phi"                   ,&gamma_phi_                ,"gamma_phi_/F");
   outTree_->Branch("gamma_id"                    ,&gamma_id_                 ,"gamma_id_/F");
 
+  outTree_->Branch("lepFromGamma_E"                     ,&lepFromGamma_E_                  ,"lepFromGamma_E_/F");
+  outTree_->Branch("lepFromGamma_mass"                  ,&lepFromGamma_mass_               ,"lepFromGamma_mass_/F");
+  outTree_->Branch("lepFromGamma_pt"                    ,&lepFromGamma_pt_                 ,"lepFromGamma_pt_/F");
+  outTree_->Branch("lepFromGamma_eta"                   ,&lepFromGamma_eta_                ,"lepFromGamma_eta_/F");
+  outTree_->Branch("lepFromGamma_phi"                   ,&lepFromGamma_phi_                ,"lepFromGamma_phi_/F");
+  outTree_->Branch("lepFromGamma_id"                    ,&lepFromGamma_id_                 ,"lepFromGamma_id_/F");
+
   outTree_->Branch("pIn_E"                     ,&pIn_E_                  ,"pIn_E_/F");
   outTree_->Branch("pIn_mass"                  ,&pIn_mass_               ,"pIn_mass_/F");
   outTree_->Branch("pIn_px"                    ,&pIn_px_                 ,"pIn_px_/F");
@@ -433,6 +502,10 @@ int GenAnalq::DefineBranches()
   outTree_->Branch("pOut_py"                    ,&pOut_py_                 ,"pOut_py_/F");
   outTree_->Branch("pOut_pz"                    ,&pOut_pz_                 ,"pOut_pz_/F");
   outTree_->Branch("pOut_id"                    ,&pOut_id_                 ,"pOut_id_/F");
+
+  outTree_->Branch("xi_p"                       ,&xi_p_                    ,"xi_p_/F");
+  outTree_->Branch("xi_LQ"                      ,&xi_LQ_                   ,"xi_LQ_/F");
+  outTree_->Branch("xi_LQ_wrong"                ,&xi_LQ_wrong_             ,"xi_LQ_wrong_/F");
 
   outTree_->Branch("lepIn_E"                     ,&lepIn_E_                  ,"lepIn_E_/F");
   outTree_->Branch("lepIn_mass"                  ,&lepIn_mass_               ,"lepIn_mass_/F");
@@ -495,6 +568,13 @@ void GenAnalq::Initialize()
   gamma_phi_             = -999; 
   gamma_id_              = -999; 
 
+  lepFromGamma_E_               = -999;
+  lepFromGamma_mass_            = -999;
+  lepFromGamma_pt_              = -999; 
+  lepFromGamma_eta_             = -999; 
+  lepFromGamma_phi_             = -999; 
+  lepFromGamma_id_              = -999; 
+
   pIn_E_               = -999;
   pIn_mass_            = -999;
   pIn_px_              = -999; 
@@ -508,6 +588,10 @@ void GenAnalq::Initialize()
   pOut_py_             = -999; 
   pOut_pz_             = -999; 
   pOut_id_              = -999; 
+
+  xi_p_                 = -999; 
+  xi_LQ_                = -999;  
+  xi_LQ_wrong_          = -999;         
 
   lepIn_E_               = -999;
   lepIn_mass_            = -999;
