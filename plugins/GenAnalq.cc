@@ -55,6 +55,7 @@
 #include <cassert>
 #include "TFile.h"
 #include "TH1D.h"
+#include "TH2F.h"
 #include "TMath.h"
 #include "TLorentzVector.h"
 #include "TTree.h"
@@ -93,16 +94,20 @@ class GenAnalq : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
   edm::EDGetTokenT<reco::GenJetCollection> genJetsAK4InputToken_;
   edm::EDGetTokenT<reco::GenJetCollection> genJetsAK8InputToken_;
 
-  TH1F *h1_LQ_mass;
+  TH1F *h1_LQ_mass, *h1_lep_pt, *h1_lep_eta, *h1_q_pt, *h1_q_eta, *h1_gamma_pt, *h1_gamma_pt__pos, *h1_lepFromGamma_pt, *h1_lepFromGamma_eta;
+  TH1F *h1_xip, *h1_xiLQ, *h1_xip_over_xiLQ_minus_one, *h1_xip_over_xiLQ_minus_one__inPPS, *h1_xip_over_xiLQ_minus_one__plusLep, *h1_xip_over_xiLQ_minus_one__inPPS__plusLep; 
+  TH2F *h2_lqIn__vs__lqOut_mass, *h2_xip__vs__xiLQ;
+  TH1F *h1_LQreco_mass, *h1_jet_pt, *h1_jet_eta;
 
   TTree *outTree_;
   int event_;
   float LQ_E_,LQ_mass_, LQ_pt_, LQ_eta_, LQ_phi_, LQ_id_, LQ_px_, LQ_py_, LQ_pz_;
   float gamma_E_,gamma_mass_, gamma_pt_, gamma_eta_, gamma_phi_, gamma_id_;
+  float jet1_mass_, jet1_pt_, jet1_eta_, jet1_phi_;
   float lepFromGamma_E_, lepFromGamma_mass_, lepFromGamma_pt_, lepFromGamma_eta_, lepFromGamma_phi_, lepFromGamma_id_;
   float pIn_E_, pIn_mass_, pIn_px_, pIn_py_, pIn_pz_, pIn_id_;
   float pOut_E_, pOut_mass_, pOut_px_, pOut_py_, pOut_pz_, pOut_id_;
-  float xi_p_, xi_LQ_, xi_LQ_wrong_;
+  float xi_p_, xi_LQ_, xi_LQ_wrong_, xi_LQ_plusLep_, xi_LQ_wrong_plusLep_;
   float lepIn_E_,lepIn_mass_, lepIn_pt_, lepIn_eta_, lepIn_phi_, lepIn_id, lepIn_id_, lepIn_px_, lepIn_py_, lepIn_pz_;
   float qIn_E_,qIn_mass_, qIn_pt_, qIn_eta_, qIn_phi_, qIn_id_, qIn_px_, qIn_py_, qIn_pz_;
   float lepOut_E_,lepOut_mass_, lepOut_pt_, lepOut_eta_, lepOut_phi_, lepOut_id_;
@@ -121,6 +126,8 @@ class GenAnalq : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
   int id_c = 4;
   int id_b = 5;
   int id_t = 6;
+
+  float max_xi_PPS = 0.2;
 
 };
 
@@ -187,7 +194,7 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    if (!iEvent.isRealData())
      iEvent.getByToken(genJetsAK8InputToken_,genJetsAK8);
 
-   TLorentzVector LQ, pIn, pOut, Gamma, LepFromGamma, LepIn, QuarkIn, LepOut, QuarkOut;
+   TLorentzVector LQ, LQplusLep, pIn, pOut, Gamma, LepFromGamma, LepIn, QuarkIn, LepOut, QuarkOut;
    // p --> p+Gamma , Gamma -->ll ,  l q --> LQ --> l q 
    //Gamma = Photon emitted from one proton (missing in some events?)
    //LepFromGamma = Final state lepton from initial state Gamma 
@@ -260,7 +267,6 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	     pOut_py_ = pOut.Py(); 
 	     pOut_pz_ = pOut.Pz(); 
 	     pOut_id_ = pIn_id_; 
-	     
 	   }
 	 
 	 //Final state lepton from Gamma	 
@@ -395,18 +401,27 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	     qOut_id_ = it->pdgId();   
 	   }
 
-	 if(nGamma>0)
+	 if(nGamma>0 && nLepGamma>0)
 	   {
+
+	     LQplusLep = LQ + LepFromGamma;
+
 	     xi_p_ = 1 - ( pOut.Pz() / pIn.Pz() ) ; 
 	     if( pOut.Pz() > 0 )
 	       {
 		 xi_LQ_ = ( LQ.E() + LQ.Pz() ) / fabs( 2*pIn.Pz() ) ; 
 		 xi_LQ_wrong_ = ( LQ.E() - LQ.Pz() ) / fabs( 2*pIn.Pz() ) ; 
+
+		 xi_LQ_plusLep_ = ( LQplusLep.E() + LQplusLep.Pz() ) / fabs( 2*pIn.Pz() ) ; 
+		 xi_LQ_wrong_plusLep_ = ( LQplusLep.E() - LQplusLep.Pz() ) / fabs( 2*pIn.Pz() ) ; 				 
 	       } 
 	     else
 	       {
 		 xi_LQ_ = ( LQ.E() - LQ.Pz() ) / fabs( 2*pIn.Pz() ) ; 
 		 xi_LQ_wrong_ = ( LQ.E() + LQ.Pz() ) / fabs( 2*pIn.Pz() ) ; 
+
+		 xi_LQ_plusLep_ = ( LQplusLep.E() - LQplusLep.Pz() ) / fabs( 2*pIn.Pz() ) ; 
+		 xi_LQ_wrong_plusLep_ = ( LQplusLep.E() + LQplusLep.Pz() ) / fabs( 2*pIn.Pz() ) ; 				 
 	       }
 	   }
 
@@ -416,12 +431,76 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	 
        }// end loop over gen particles
 
-     //Fill histograms     
-     h1_LQ_mass->Fill(LQ.M());
 
      //Fill tree variables
      lqIn_mass_ = (LepIn + QuarkIn).M();
      lqOut_mass_ = (LepOut + QuarkOut).M();
+
+     //Fill histograms     
+     h1_LQ_mass->Fill(LQ.M());
+     h1_lep_pt->Fill(LepOut.Pt());
+     h1_lep_eta->Fill(LepOut.Eta());
+     h1_q_pt->Fill(QuarkOut.Pt());
+     h1_q_eta->Fill(QuarkOut.Eta());
+     h1_gamma_pt->Fill(gamma_pt_);
+     
+     h2_lqIn__vs__lqOut_mass->Fill(lqOut_mass_,lqIn_mass_);
+     
+     if(nGamma>0 && nLepGamma>0)
+       {
+	 h1_gamma_pt__pos->Fill(Gamma.Pt());
+	 h1_lepFromGamma_pt->Fill(LepFromGamma.Pt());
+	 h1_lepFromGamma_eta->Fill(LepFromGamma.Eta());
+	 h1_xip->Fill(xi_p_);
+	 h1_xiLQ->Fill(xi_LQ_);
+
+	 h1_xip_over_xiLQ_minus_one->Fill( (xi_p_/xi_LQ_) - 1 );
+	 if(xi_p_<max_xi_PPS)
+	   h1_xip_over_xiLQ_minus_one__inPPS->Fill( (xi_p_/xi_LQ_) - 1 );
+
+	 h1_xip_over_xiLQ_minus_one__plusLep->Fill( (xi_p_/xi_LQ_plusLep_) - 1 );
+	 if(xi_p_<max_xi_PPS)
+	   h1_xip_over_xiLQ_minus_one__inPPS__plusLep->Fill( (xi_p_/xi_LQ_plusLep_) - 1 );
+
+	 h2_xip__vs__xiLQ->Fill(xi_LQ_,xi_p_);	 
+       }
+
+
+     if( genJetsAK8.isValid() && genJetsAK8->size()>=2 ) 
+       {
+
+	 TLorentzVector AK8Jet1, AK8Jet2, LQreco;
+	 AK8Jet1.SetPtEtaPhiM(genJetsAK8->at(0).pt(),genJetsAK8->at(0).eta(),genJetsAK8->at(0).phi(),genJetsAK8->at(0).mass());
+	 AK8Jet2.SetPtEtaPhiM(genJetsAK8->at(1).pt(),genJetsAK8->at(1).eta(),genJetsAK8->at(1).phi(),genJetsAK8->at(1).mass());
+
+	 if( AK8Jet1.DeltaR(LepOut) > AK8Jet2.DeltaR(LepOut) )
+	   {
+	     jet1_mass_ = AK8Jet1.M();
+	     jet1_pt_ = AK8Jet1.Pt();
+	     jet1_eta_ = AK8Jet1.Eta();
+	     jet1_phi_ = AK8Jet1.Phi();
+
+	     LQreco = AK8Jet1 + LepOut;
+	     
+	     h1_LQreco_mass->Fill(LQreco.M());
+	     h1_jet_pt->Fill(AK8Jet1.Pt());
+	     h1_jet_eta->Fill(AK8Jet1.Eta());
+	   }
+	 else
+	   {
+	     jet1_mass_ = AK8Jet2.M();
+	     jet1_pt_ = AK8Jet2.Pt();
+	     jet1_eta_ = AK8Jet2.Eta();
+	     jet1_phi_ = AK8Jet2.Phi();
+
+	     LQreco = AK8Jet2 + LepOut;
+	     
+	     h1_LQreco_mass->Fill(LQreco.M());
+	     h1_jet_pt->Fill(AK8Jet2.Pt());
+	     h1_jet_eta->Fill(AK8Jet2.Eta());
+	   }
+
+       }
 
    }
 
@@ -438,6 +517,27 @@ GenAnalq::beginJob()
 {  
   // Book the histograms
   h1_LQ_mass = fs_->make<TH1F>("h1_LQ_mass","h1_LQ_mass",1000,0,10000);
+  h1_lep_pt = fs_->make<TH1F>("h1_lep_pt","h1_lep_pt",1000,0,10000);
+  h1_lep_eta = fs_->make<TH1F>("h1_lep_eta","h1_lep_eta",100,-5,5);
+  h1_q_pt = fs_->make<TH1F>("h1_q_pt","h1_q_pt",1000,0,10000);
+  h1_q_eta = fs_->make<TH1F>("h1_q_eta","h1_q_eta",100,-5,5);
+  h1_gamma_pt = fs_->make<TH1F>("h1_gamma_pt","h1_gamma_pt",300,-2000,1000);
+  h1_gamma_pt__pos = fs_->make<TH1F>("h1_gamma_pt__pos","h1_gamma_pt__pos",50,0,10);
+  h1_lepFromGamma_pt = fs_->make<TH1F>("h1_lepFromGamma_pt","h1_lepFromGamma_pt",200,0,2000);
+  h1_lepFromGamma_eta = fs_->make<TH1F>("h1_lepFromGamma_eta","h1_lepFromGamma_eta",100,-10,10);
+  h1_xip = fs_->make<TH1F>("h1_xip","h1_xip",100,0,1);
+  h1_xiLQ = fs_->make<TH1F>("h1_xiLQ","h1_xiLQ",100,0,1);
+  h1_xip_over_xiLQ_minus_one = fs_->make<TH1F>("h1_xip_over_xiLQ_minus_one","h1_xip_over_xiLQ_minus_one",2000,-10,10);
+  h1_xip_over_xiLQ_minus_one__inPPS = fs_->make<TH1F>("h1_xip_over_xiLQ_minus_one__inPPS","h1_xip_over_xiLQ_minus_one__inPPS",2000,-10,10);
+  h1_xip_over_xiLQ_minus_one__plusLep = fs_->make<TH1F>("h1_xip_over_xiLQ_minus_one__plusLep","h1_xip_over_xiLQ_minus_one__plusLep",2000,-10,10);
+  h1_xip_over_xiLQ_minus_one__inPPS__plusLep = fs_->make<TH1F>("h1_xip_over_xiLQ_minus_one__inPPS__plusLep","h1_xip_over_xiLQ_minus_one__inPPS__plusLep",2000,-10,10);
+
+  h2_lqIn__vs__lqOut_mass = fs_->make<TH2F>("h2_lqIn__vs__lqOut_mass","h2_lqIn__vs__lqOut_mass",500,-10000,10000,500,-30000,30000);
+  h2_xip__vs__xiLQ = fs_->make<TH2F>("h2_xip__vs__xiLQ","h2_xip__vs__xiLQ",50,0,1,50,0,1);
+
+  h1_LQreco_mass = fs_->make<TH1F>("h1_LQreco_mass","h1_LQreco_mass",1000,0,10000);
+  h1_jet_pt = fs_->make<TH1F>("h1_jet_pt","h1_jet_pt",1000,0,10000);
+  h1_jet_eta = fs_->make<TH1F>("h1_jet_eta","h1_jet_eta",100,-5,5);
 
   // Book the tree and define branches
   outTree_ = fs_->make<TTree>("events","events");
@@ -503,9 +603,16 @@ int GenAnalq::DefineBranches()
   outTree_->Branch("pOut_pz"                    ,&pOut_pz_                 ,"pOut_pz_/F");
   outTree_->Branch("pOut_id"                    ,&pOut_id_                 ,"pOut_id_/F");
 
+  outTree_->Branch("jet1_mass"                  ,&jet1_mass_               ,"jet1_mass_/F");
+  outTree_->Branch("jet1_pt"                    ,&jet1_pt_                 ,"jet1_pt_/F");
+  outTree_->Branch("jet1_eta"                   ,&jet1_eta_                ,"jet1_eta_/F");
+  outTree_->Branch("jet1_phi"                   ,&jet1_phi_                ,"jet1_phi_/F");
+
   outTree_->Branch("xi_p"                       ,&xi_p_                    ,"xi_p_/F");
   outTree_->Branch("xi_LQ"                      ,&xi_LQ_                   ,"xi_LQ_/F");
   outTree_->Branch("xi_LQ_wrong"                ,&xi_LQ_wrong_             ,"xi_LQ_wrong_/F");
+  outTree_->Branch("xi_LQ_plusLep"                      ,&xi_LQ_plusLep_                   ,"xi_LQ_plusLep_/F");
+  outTree_->Branch("xi_LQ_wrong_plusLep"                ,&xi_LQ_wrong_plusLep_             ,"xi_LQ_wrong_plusLep_/F");
 
   outTree_->Branch("lepIn_E"                     ,&lepIn_E_                  ,"lepIn_E_/F");
   outTree_->Branch("lepIn_mass"                  ,&lepIn_mass_               ,"lepIn_mass_/F");
@@ -589,9 +696,16 @@ void GenAnalq::Initialize()
   pOut_pz_             = -999; 
   pOut_id_              = -999; 
 
+  jet1_mass_            = -999;
+  jet1_pt_              = -999; 
+  jet1_eta_             = -999; 
+  jet1_phi_             = -999; 
+
   xi_p_                 = -999; 
   xi_LQ_                = -999;  
   xi_LQ_wrong_          = -999;         
+  xi_LQ_plusLep_                = -999;  
+  xi_LQ_wrong_plusLep_          = -999;         
 
   lepIn_E_               = -999;
   lepIn_mass_            = -999;
