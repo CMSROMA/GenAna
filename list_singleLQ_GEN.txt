@@ -1,0 +1,2 @@
+root://eoscms///eos/cms/store/group/phys_exotica/lq-LQ-lq/test_GEN_1/singleLQ_13TeV_Pow_Herwig7_M2000_Lambda1p0_GEN.root
+root://eoscms///eos/cms/store/group/phys_exotica/lq-LQ-lq/test_GEN_1/singleLQ_13TeV_Pow_Herwig7_M3000_Lambda1p0_GEN.root
