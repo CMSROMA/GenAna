@@ -62,6 +62,9 @@ else:
 # loop over gripacks
 for genfile in genfilelist:
 
+    if("#" in genfile):
+        continue
+
     outputfilename = ((genfile.split("/")[-1]).split("."))[0]+"_ANALYSIS.root"
     #print outputfilename
 

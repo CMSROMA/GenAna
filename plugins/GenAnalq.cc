@@ -102,7 +102,7 @@ class GenAnalq : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
   TTree *outTree_;
   int event_;
   float LQ_E_,LQ_mass_, LQ_pt_, LQ_eta_, LQ_phi_, LQ_id_, LQ_px_, LQ_py_, LQ_pz_;
-  float gamma_E_,gamma_mass_, gamma_pt_, gamma_eta_, gamma_phi_, gamma_id_;
+  float gamma_E_,gamma_mass_, gamma_pt_, gamma_eta_, gamma_phi_, gamma_id_, gamma_from_p_, gamma_px_, gamma_py_, gamma_pz_;
   float jet1_mass_, jet1_pt_, jet1_eta_, jet1_phi_;
   float lepFromGamma_E_, lepFromGamma_mass_, lepFromGamma_pt_, lepFromGamma_eta_, lepFromGamma_phi_, lepFromGamma_id_;
   float pIn_E_, pIn_mass_, pIn_px_, pIn_py_, pIn_pz_, pIn_id_;
@@ -126,6 +126,7 @@ class GenAnalq : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
   int id_c = 4;
   int id_b = 5;
   int id_t = 6;
+  int status_intermediate = 11;
 
   float max_xi_PPS = 0.2;
 
@@ -216,6 +217,7 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      int nQuarkIn = 0;
      int nLepOut = 0;
      int nQuarkOut = 0;
+     int gammaFromProton = -9;
 
      for( reco::GenParticleCollection::const_iterator it = genParticles->begin(); it != genParticles->end(); ++it ) 
        {
@@ -239,11 +241,30 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	   }
 	 
 	 //Gamma and Proton
-	 if (it->pdgId()==id_photon && it->mother()->pdgId()==id_p)
+	 if (it->pdgId()==id_photon 
+	     && it->status()==status_intermediate 
+	     && ( it->mother()->pdgId()==id_p || 
+		  ( fabs(it->mother()->pdgId())==id_u || fabs(it->mother()->pdgId())==id_c || fabs(it->mother()->pdgId())==id_t 
+		    || fabs(it->mother()->pdgId())==id_d || fabs(it->mother()->pdgId())==id_s || fabs(it->mother()->pdgId())==id_b ) 
+		  )
+	     )
 	   {
 	     //Gamma.SetPtEtaPhiM(it->pt(),it->eta(),it->phi(),it->mass());	 
 	     Gamma.SetPxPyPzE(it->px(),it->py(),it->pz(),it->energy());	 	     
-	     pIn.SetPxPyPzE(it->mother()->px(),it->mother()->py(),it->mother()->pz(),it->mother()->energy());	 	     
+
+	     //Find the proton that emitted the gamma
+	     for( reco::GenParticleCollection::const_iterator myit = genParticles->begin(); myit != genParticles->end(); ++myit ) 
+	       {
+		 if(myit->pdgId()==id_p && it->pz()*myit->pz()>0.)
+		   {
+		     pIn.SetPxPyPzE(myit->px(),myit->py(),myit->pz(),myit->energy()); 	 	     
+		     break;
+		   }
+	       }
+	     //if(it->pz()>0)
+	     //  pIn.SetPxPyPzE(0.,0.,+6500,sqrt(6500*6500+0.938*0.938)); //proton +z LHC 13 TeV	 	     
+	     //if(it->pz()<0)
+	     //  pIn.SetPxPyPzE(0.,0.,-6500,sqrt(6500*6500+0.938*0.938)); //proton -z LHC 13 TeV	     
 	     nGamma++;
 	     
 	     gamma_E_ = Gamma.E(); 
@@ -252,13 +273,29 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	     gamma_eta_ = Gamma.Eta(); 
 	     gamma_phi_ = Gamma.Phi();  
 	     gamma_id_ = it->pdgId();  
+	     gamma_px_ = it->px();
+	     gamma_py_ = it->py();
+	     gamma_pz_ = it->pz();   
 	     
-	     pIn_E_ = it->mother()->energy(); 
-	     pIn_mass_ = it->mother()->mass(); 
-	     pIn_px_ = it->mother()->px(); 
-	     pIn_py_ = it->mother()->py(); 
-	     pIn_pz_ = it->mother()->pz();  
-	     pIn_id_ = it->mother()->pdgId();  
+	     if(it->mother()->pdgId()==id_p) //gamma from proton
+	       {
+		 gamma_from_p_ = 1;
+		 gammaFromProton = 1;
+	       }
+	     if( ( fabs(it->mother()->pdgId())==id_u || fabs(it->mother()->pdgId())==id_c || fabs(it->mother()->pdgId())==id_t 
+		   || fabs(it->mother()->pdgId())==id_d || fabs(it->mother()->pdgId())==id_s || fabs(it->mother()->pdgId())==id_b )
+		 ) //gamma from quark
+	       {
+		 gamma_from_p_ = 0;
+		 gammaFromProton = 0;
+	       }
+	     
+	     pIn_E_ = pIn.E(); 
+	     pIn_mass_ = pIn.M();  
+	     pIn_px_ = pIn.Px();  
+	     pIn_py_ = pIn.Py();  
+	     pIn_pz_ = pIn.Pz();   
+	     pIn_id_ = id_p;  
 	     
 	     pOut = pIn - Gamma;
 	     pOut_E_ = pOut.E(); 
@@ -285,7 +322,12 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		     if(thismother->pdgId()==id_LQ)
 		       break;
 		     
-		     if (thismother->pdgId()==id_photon && thismother->mother()->pdgId()==id_p)
+		     if (thismother->pdgId()==id_photon 
+			 && thismother->status()==status_intermediate 
+			 && ( thismother->mother()->pdgId()==id_p || 
+			      ( fabs(thismother->mother()->pdgId())==id_u || fabs(thismother->mother()->pdgId())==id_c || fabs(thismother->mother()->pdgId())==id_t 
+				|| fabs(thismother->mother()->pdgId())==id_d || fabs(thismother->mother()->pdgId())==id_s || fabs(thismother->mother()->pdgId())==id_b ) )  
+			 )
 		       {
 			 //lepton from gamma found
 			 nLepGamma++;
@@ -342,7 +384,7 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 	 //Incoming quark
 	 if ( ( fabs(it->pdgId())==id_u || fabs(it->pdgId())==id_c || fabs(it->pdgId())==id_t 
-		|| fabs(it->pdgId())==id_d || fabs(it->pdgId())==id_b || fabs(it->pdgId())==id_s ) ) 
+		|| fabs(it->pdgId())==id_d || fabs(it->pdgId())==id_s || fabs(it->pdgId())==id_b ) ) 
 	   {
 	     int dauId = -999;
 	     if( it->numberOfDaughters()>0 )
@@ -446,7 +488,7 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      
      h2_lqIn__vs__lqOut_mass->Fill(lqOut_mass_,lqIn_mass_);
      
-     if(nGamma>0 && nLepGamma>0)
+     if(nGamma>0 && nLepGamma>0 && gammaFromProton==0)
        {
 	 h1_gamma_pt__pos->Fill(Gamma.Pt());
 	 h1_lepFromGamma_pt->Fill(LepFromGamma.Pt());
@@ -581,6 +623,10 @@ int GenAnalq::DefineBranches()
   outTree_->Branch("gamma_eta"                   ,&gamma_eta_                ,"gamma_eta_/F");
   outTree_->Branch("gamma_phi"                   ,&gamma_phi_                ,"gamma_phi_/F");
   outTree_->Branch("gamma_id"                    ,&gamma_id_                 ,"gamma_id_/F");
+  outTree_->Branch("gamma_from_p_"               ,&gamma_from_p_             ,"gamma_from_p_/F");
+  outTree_->Branch("gamma_px"                    ,&gamma_px_                 ,"gamma_px_/F");
+  outTree_->Branch("gamma_py"                    ,&gamma_py_                 ,"gamma_py_/F");
+  outTree_->Branch("gamma_pz"                    ,&gamma_pz_                 ,"gamma_pz_/F");
 
   outTree_->Branch("lepFromGamma_E"                     ,&lepFromGamma_E_                  ,"lepFromGamma_E_/F");
   outTree_->Branch("lepFromGamma_mass"                  ,&lepFromGamma_mass_               ,"lepFromGamma_mass_/F");
@@ -674,6 +720,10 @@ void GenAnalq::Initialize()
   gamma_eta_             = -999; 
   gamma_phi_             = -999; 
   gamma_id_              = -999; 
+  gamma_from_p_          = -999; 
+  gamma_px_              = -999; 
+  gamma_py_              = -999; 
+  gamma_pz_              = -999; 
 
   lepFromGamma_E_               = -999;
   lepFromGamma_mass_            = -999;

@@ -101,8 +101,10 @@ void makePlots_singleLQ(){
   gStyle->SetOptStat(0);
 
   //load histograms
-  TFile *file_M2000_Lambda1p0 = TFile::Open("TestOutput/singleLQ_13TeV_Pow_Herwig7_M2000_Lambda1p0_GEN_ANALYSIS.root");
-  TFile *file_M3000_Lambda1p0 = TFile::Open("TestOutput/singleLQ_13TeV_Pow_Herwig7_M3000_Lambda1p0_GEN_ANALYSIS.root");
+  TFile *file_M2000_Lambda1p0 = TFile::Open("TestOutput2/singleLQ_13TeV_Pow_Herwig7_M2000_Lambda1p0_GEN_ANALYSIS.root");
+  TFile *file_M3000_Lambda1p0 = TFile::Open("TestOutput2/singleLQ_13TeV_Pow_Herwig7_M3000_Lambda1p0_GEN_ANALYSIS.root");
+
+  string myoutputdir = "/afs/cern.ch/user/s/santanas/www/SingleLQ/TestGen_2"; 
 
   /*
   std::vector< TFile* > Vec_Files;
@@ -122,7 +124,7 @@ void makePlots_singleLQ(){
   histVec_Mall_Lambda1p0_LQ_mass.push_back( (TH1F*)file_M3000_Lambda1p0->Get(variable.c_str())->Clone() );
   std::vector< float > Vec_M = {2000, 3000};
   std::vector< float > Vec_L = {1.0, 1.0};
-  drawHisto("/afs/cern.ch/user/s/santanas/www/SingleLQ/TestGen_1/histVec_Mall_Lambda1p0_LQ_mass",histVec_Mall_Lambda1p0_LQ_mass,Vec_M,Vec_L,2,"LQ mass [GeV]","Events",0,5000,false,false);
+  drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_LQ_mass",histVec_Mall_Lambda1p0_LQ_mass,Vec_M,Vec_L,2,"LQ mass [GeV]","Events",0,5000,false,false);
   Vec_M.clear(); Vec_L.clear();
 
   std::vector< TH1F* > histVec_Mall_Lambda1p0_lep_pt;
@@ -131,7 +133,7 @@ void makePlots_singleLQ(){
   histVec_Mall_Lambda1p0_lep_pt.push_back( (TH1F*)file_M3000_Lambda1p0->Get(variable.c_str())->Clone() );
   Vec_M = {2000, 3000};
   Vec_L = {1.0, 1.0};
-  drawHisto("/afs/cern.ch/user/s/santanas/www/SingleLQ/TestGen_1/histVec_Mall_Lambda1p0_lep_pt",histVec_Mall_Lambda1p0_lep_pt,Vec_M,Vec_L,2,"Lepton pt [GeV]","Events",0,3000,false,false);
+  drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_lep_pt",histVec_Mall_Lambda1p0_lep_pt,Vec_M,Vec_L,2,"Lepton pt [GeV]","Events",0,3000,false,false);
   Vec_M.clear(); Vec_L.clear();
 
   std::vector< TH1F* > histVec_Mall_Lambda1p0_q_pt;
@@ -140,7 +142,7 @@ void makePlots_singleLQ(){
   histVec_Mall_Lambda1p0_q_pt.push_back( (TH1F*)file_M3000_Lambda1p0->Get(variable.c_str())->Clone() );
   Vec_M = {2000, 3000};
   Vec_L = {1.0, 1.0};
-  drawHisto("/afs/cern.ch/user/s/santanas/www/SingleLQ/TestGen_1/histVec_Mall_Lambda1p0_q_pt",histVec_Mall_Lambda1p0_q_pt,Vec_M,Vec_L,2,"Quark pt [GeV]","Events",0,3000,false,false);
+  drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_q_pt",histVec_Mall_Lambda1p0_q_pt,Vec_M,Vec_L,2,"Quark pt [GeV]","Events",0,3000,false,false);
   Vec_M.clear(); Vec_L.clear();
 
   std::vector< TH1F* > histVec_Mall_Lambda1p0_lep_eta;
@@ -149,7 +151,7 @@ void makePlots_singleLQ(){
   histVec_Mall_Lambda1p0_lep_eta.push_back( (TH1F*)file_M3000_Lambda1p0->Get(variable.c_str())->Clone() );
   Vec_M = {2000, 3000};
   Vec_L = {1.0, 1.0};
-  drawHisto("/afs/cern.ch/user/s/santanas/www/SingleLQ/TestGen_1/histVec_Mall_Lambda1p0_lep_eta",histVec_Mall_Lambda1p0_lep_eta,Vec_M,Vec_L,2,"Lepton #eta [GeV]","Events",-5,5,false,false);
+  drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_lep_eta",histVec_Mall_Lambda1p0_lep_eta,Vec_M,Vec_L,2,"Lepton #eta [GeV]","Events",-5,5,false,false);
   Vec_M.clear(); Vec_L.clear();
 
   std::vector< TH1F* > histVec_Mall_Lambda1p0_q_eta;
@@ -158,7 +160,7 @@ void makePlots_singleLQ(){
   histVec_Mall_Lambda1p0_q_eta.push_back( (TH1F*)file_M3000_Lambda1p0->Get(variable.c_str())->Clone() );
   Vec_M = {2000, 3000};
   Vec_L = {1.0, 1.0};
-  drawHisto("/afs/cern.ch/user/s/santanas/www/SingleLQ/TestGen_1/histVec_Mall_Lambda1p0_q_eta",histVec_Mall_Lambda1p0_q_eta,Vec_M,Vec_L,2,"Quark #eta [GeV]","Events",-5,5,false,false);
+  drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_q_eta",histVec_Mall_Lambda1p0_q_eta,Vec_M,Vec_L,2,"Quark #eta [GeV]","Events",-5,5,false,false);
   Vec_M.clear(); Vec_L.clear();
 
   std::vector< TH1F* > histVec_Mall_Lambda1p0_xip;
@@ -167,7 +169,7 @@ void makePlots_singleLQ(){
   histVec_Mall_Lambda1p0_xip.push_back( (TH1F*)file_M3000_Lambda1p0->Get(variable.c_str())->Clone() );
   Vec_M = {2000, 3000};
   Vec_L = {1.0, 1.0};
-  drawHisto("/afs/cern.ch/user/s/santanas/www/SingleLQ/TestGen_1/histVec_Mall_Lambda1p0_xip",histVec_Mall_Lambda1p0_xip,Vec_M,Vec_L,2,"Proton #xi = #Delta p_{z} / p_{z}","Events",0,1,false,false);
+  drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_xip",histVec_Mall_Lambda1p0_xip,Vec_M,Vec_L,2,"Proton #xi = #Delta p_{z} / p_{z}","Events",0,1,false,false);
   Vec_M.clear(); Vec_L.clear();
 
   std::vector< TH1F* > histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS;
@@ -176,7 +178,7 @@ void makePlots_singleLQ(){
   histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS.push_back( (TH1F*)file_M3000_Lambda1p0->Get(variable.c_str())->Clone() );
   Vec_M = {2000, 3000};
   Vec_L = {1.0, 1.0};
-  drawHisto("/afs/cern.ch/user/s/santanas/www/SingleLQ/TestGen_1/histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS",histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS,Vec_M,Vec_L,4,"#xi(proton)/#xi(LQ) -1 (within PPS acceptance, #xi<0.2)","Events",-1.,5.,false,false);
+  drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS",histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS,Vec_M,Vec_L,4,"#xi(proton)/#xi(LQ) -1 (within PPS acceptance, #xi<0.2)","Events",-1.,5.,false,false);
   Vec_M.clear(); Vec_L.clear();
 
   std::vector< TH1F* > histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS__plusLep;
@@ -185,7 +187,7 @@ void makePlots_singleLQ(){
   histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS__plusLep.push_back( (TH1F*)file_M3000_Lambda1p0->Get(variable.c_str())->Clone() );
   Vec_M = {2000, 3000};
   Vec_L = {1.0, 1.0};
-  drawHisto("/afs/cern.ch/user/s/santanas/www/SingleLQ/TestGen_1/histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS__plusLep",histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS__plusLep,Vec_M,Vec_L,1,"#xi(proton)/#xi(LQ+Lepton) -1 (within PPS acceptance, #xi<0.2)","Events (normalized)",-0.5,0.5,false,true);
+  drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS__plusLep",histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS__plusLep,Vec_M,Vec_L,1,"#xi(proton)/#xi(LQ+Lepton) -1 (within PPS acceptance, #xi<0.2)","Events (normalized)",-0.5,0.5,false,true);
   Vec_M.clear(); Vec_L.clear();
 
   std::vector< TH1F* > histVec_Mall_Lambda1p0_gamma_pt__pos;
@@ -194,7 +196,7 @@ void makePlots_singleLQ(){
   histVec_Mall_Lambda1p0_gamma_pt__pos.push_back( (TH1F*)file_M3000_Lambda1p0->Get(variable.c_str())->Clone() );
   Vec_M = {2000, 3000};
   Vec_L = {1.0, 1.0};
-  drawHisto("/afs/cern.ch/user/s/santanas/www/SingleLQ/TestGen_1/histVec_Mall_Lambda1p0_gamma_pt__pos",histVec_Mall_Lambda1p0_gamma_pt__pos,Vec_M,Vec_L,2,"Photon pt [GeV]","Events",0,10,false,false);
+  drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_gamma_pt__pos",histVec_Mall_Lambda1p0_gamma_pt__pos,Vec_M,Vec_L,2,"Photon pt [GeV]","Events",0,10,false,false);
   Vec_M.clear(); Vec_L.clear();
 
   std::vector< TH1F* > histVec_Mall_Lambda1p0_LQreco_mass;
@@ -203,7 +205,7 @@ void makePlots_singleLQ(){
   histVec_Mall_Lambda1p0_LQreco_mass.push_back( (TH1F*)file_M3000_Lambda1p0->Get(variable.c_str())->Clone() );
   Vec_M = {2000, 3000};
   Vec_L = {1.0, 1.0};
-  drawHisto("/afs/cern.ch/user/s/santanas/www/SingleLQ/TestGen_1/histVec_Mall_Lambda1p0_LQreco_mass",histVec_Mall_Lambda1p0_LQreco_mass,Vec_M,Vec_L,2,"LQreco mass [GeV]","Events",0,5000,false,false);
+  drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_LQreco_mass",histVec_Mall_Lambda1p0_LQreco_mass,Vec_M,Vec_L,2,"LQreco mass [GeV]","Events",0,5000,false,false);
   Vec_M.clear(); Vec_L.clear();
 
   std::vector< TH1F* > histVec_Mall_Lambda1p0_jet_pt;
@@ -212,7 +214,7 @@ void makePlots_singleLQ(){
   histVec_Mall_Lambda1p0_jet_pt.push_back( (TH1F*)file_M3000_Lambda1p0->Get(variable.c_str())->Clone() );
   Vec_M = {2000, 3000};
   Vec_L = {1.0, 1.0};
-  drawHisto("/afs/cern.ch/user/s/santanas/www/SingleLQ/TestGen_1/histVec_Mall_Lambda1p0_jet_pt",histVec_Mall_Lambda1p0_jet_pt,Vec_M,Vec_L,2,"Jet pt [GeV]","Events",0,3000,false,false);
+  drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_jet_pt",histVec_Mall_Lambda1p0_jet_pt,Vec_M,Vec_L,2,"Jet pt [GeV]","Events",0,3000,false,false);
   Vec_M.clear(); Vec_L.clear();
 
   std::vector< TH1F* > histVec_Mall_Lambda1p0_jet_eta;
@@ -221,7 +223,7 @@ void makePlots_singleLQ(){
   histVec_Mall_Lambda1p0_jet_eta.push_back( (TH1F*)file_M3000_Lambda1p0->Get(variable.c_str())->Clone() );
   Vec_M = {2000, 3000};
   Vec_L = {1.0, 1.0};
-  drawHisto("/afs/cern.ch/user/s/santanas/www/SingleLQ/TestGen_1/histVec_Mall_Lambda1p0_jet_eta",histVec_Mall_Lambda1p0_jet_eta,Vec_M,Vec_L,2,"Jet #eta [GeV]","Events",-5,5,false,false);
+  drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_jet_eta",histVec_Mall_Lambda1p0_jet_eta,Vec_M,Vec_L,2,"Jet #eta [GeV]","Events",-5,5,false,false);
   Vec_M.clear(); Vec_L.clear();
 
   /*
