@@ -487,8 +487,9 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      h1_gamma_pt->Fill(gamma_pt_);
      
      h2_lqIn__vs__lqOut_mass->Fill(lqOut_mass_,lqIn_mass_);
-     
-     if(nGamma>0 && nLepGamma>0 && gammaFromProton==0)
+
+     //Fill only if photon is coming from proton
+     if(nGamma>0 && nLepGamma>0 && gammaFromProton==1)
        {
 	 h1_gamma_pt__pos->Fill(Gamma.Pt());
 	 h1_lepFromGamma_pt->Fill(LepFromGamma.Pt());
