@@ -29,11 +29,18 @@ GenAnalq.root (containing both histograms and tree)
 ## To run over several GEN files:
 
 Create a alist of GEN files (i.e. list_singleLQ_GEN.txt)
+
+EOS:
 ```
 root://eoscms///eos/cms/store/group/phys_exotica/lq-LQ-lq/test_GEN_1/singleLQ_13TeV_Pow_Herwig7_M2000_Lambda1p0_GEN.root
 root://eoscms///eos/cms/store/group/phys_exotica/lq-LQ-lq/test_GEN_1/singleLQ_13TeV_Pow_Herwig7_M3000_Lambda1p0_GEN.root
 ...
+```
 
+AFS or local:
+```
+file:/afs/cern.ch/work/s/santanas/Workspace/CMS/generateLQ_NLO/LQGen/HerwigInterface/CMSSW_10_6_28_LQGen/src/LeptonInducedLQ_umu_GEN_HerwigNew/LeptonInducedLQ_umu_18_11_22_M1000_Lambda1p0_mod__1.root
+file:/afs/cern.ch/work/s/santanas/Workspace/CMS/generateLQ_NLO/LQGen/HerwigInterface/CMSSW_10_6_28_LQGen/src/LeptonInducedLQ_umu_GEN_HerwigNew/LeptonInducedLQ_umu_18_11_22_M3000_Lambda1p0_mod__1.root
 ```
 
 Run analysis on all samples:
