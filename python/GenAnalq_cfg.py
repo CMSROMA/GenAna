@@ -42,7 +42,7 @@ process.genAnalyzer = cms.EDAnalyzer('GenAnalq',
 
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 process.printTree = cms.EDAnalyzer("ParticleListDrawer",
-                                   maxEventsToPrint = cms.untracked.int32(5),
+                                   maxEventsToPrint = cms.untracked.int32(10),
                                    printVertex = cms.untracked.bool(False),
                                    printOnlyHardInteraction = cms.untracked.bool(False), # Print only status=3 particles. This will not work for Pythia8, which does not have any such particles.  
                                    src = cms.InputTag("genParticles")

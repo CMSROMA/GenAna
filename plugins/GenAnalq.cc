@@ -94,9 +94,10 @@ class GenAnalq : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
   edm::EDGetTokenT<reco::GenJetCollection> genJetsAK4InputToken_;
   edm::EDGetTokenT<reco::GenJetCollection> genJetsAK8InputToken_;
 
-  TH1F *h1_LQ_mass, *h1_lep_pt, *h1_lep_eta, *h1_q_pt, *h1_q_eta, *h1_gamma_pt, *h1_gamma_pt__pos, *h1_lepFromGamma_pt, *h1_lepFromGamma_eta;
+  TH1F *h1_LQ_mass, *h1_lep_pt, *h1_lep_eta, *h1_q_pt, *h1_q_eta, *h1_gamma_pt, *h1_gamma_pt__pos, *h1_gamma_pz__pos, *h1_lepFromGamma_pt, *h1_lepFromGamma_eta;
   TH1F *h1_xip, *h1_xiLQ, *h1_xip_over_xiLQ_minus_one, *h1_xip_over_xiLQ_minus_one__inPPS, *h1_xip_over_xiLQ_minus_one__plusLep, *h1_xip_over_xiLQ_minus_one__inPPS__plusLep; 
-  TH2F *h2_lqIn__vs__lqOut_mass, *h2_xip__vs__xiLQ;
+  //TH2F *h2_lqIn__vs__lqOut_mass, *h2_xip__vs__xiLQ;
+  TH2F *h2_xip__vs__xiLQ;
   TH1F *h1_LQreco_mass, *h1_jet_pt, *h1_jet_eta;
 
   TTree *outTree_;
@@ -108,11 +109,12 @@ class GenAnalq : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
   float pIn_E_, pIn_mass_, pIn_px_, pIn_py_, pIn_pz_, pIn_id_;
   float pOut_E_, pOut_mass_, pOut_px_, pOut_py_, pOut_pz_, pOut_id_;
   float xi_p_, xi_LQ_, xi_LQ_wrong_, xi_LQ_plusLep_, xi_LQ_wrong_plusLep_;
-  float lepIn_E_,lepIn_mass_, lepIn_pt_, lepIn_eta_, lepIn_phi_, lepIn_id, lepIn_id_, lepIn_px_, lepIn_py_, lepIn_pz_;
-  float qIn_E_,qIn_mass_, qIn_pt_, qIn_eta_, qIn_phi_, qIn_id_, qIn_px_, qIn_py_, qIn_pz_;
+  //float lepIn_E_,lepIn_mass_, lepIn_pt_, lepIn_eta_, lepIn_phi_, lepIn_id, lepIn_id_, lepIn_px_, lepIn_py_, lepIn_pz_;
+  //float qIn_E_,qIn_mass_, qIn_pt_, qIn_eta_, qIn_phi_, qIn_id_, qIn_px_, qIn_py_, qIn_pz_;
   float lepOut_E_,lepOut_mass_, lepOut_pt_, lepOut_eta_, lepOut_phi_, lepOut_id_;
   float qOut_E_,qOut_mass_, qOut_pt_, qOut_eta_, qOut_phi_, qOut_id_;
-  float lqIn_mass_, lqOut_mass_;
+  //float lqIn_mass_, lqOut_mass_;
+  float lqOut_mass_;
 
   int id_p = 2212;
   int id_LQ = 9911561;
@@ -127,6 +129,7 @@ class GenAnalq : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
   int id_b = 5;
   int id_t = 6;
   int status_intermediate = 11;
+  int status_decayed = 2;
 
   float max_xi_PPS = 0.2;
 
@@ -195,7 +198,8 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    if (!iEvent.isRealData())
      iEvent.getByToken(genJetsAK8InputToken_,genJetsAK8);
 
-   TLorentzVector LQ, LQplusLep, pIn, pOut, Gamma, LepFromGamma, LepIn, QuarkIn, LepOut, QuarkOut;
+   //TLorentzVector LQ, LQplusLep, pIn, pOut, Gamma, LepFromGamma, LepIn, QuarkIn, LepOut, QuarkOut;
+   TLorentzVector LQ, LQplusLep, pIn, pOut, Gamma, LepFromGamma, LepOut, QuarkOut;
    // p --> p+Gamma , Gamma -->ll ,  l q --> LQ --> l q 
    //Gamma = Photon emitted from one proton (missing in some events?)
    //LepFromGamma = Final state lepton from initial state Gamma 
@@ -213,17 +217,27 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      int nLQ = 0;
      int nLepGamma = 0;
      int nGamma = 0;
-     int nLepIn = 0;
-     int nQuarkIn = 0;
+     //int nLepIn = 0;
+     //int nQuarkIn = 0;
      int nLepOut = 0;
      int nQuarkOut = 0;
      int gammaFromProton = -9;
 
      for( reco::GenParticleCollection::const_iterator it = genParticles->begin(); it != genParticles->end(); ++it ) 
+       {	 
+	 //LQ
+	 if (fabs(it->pdgId())==id_LQ && it->status()==status_decayed)
+	   {
+	     LQ_id_ = it->pdgId();  
+	     break;
+	   }
+       }
+
+     for( reco::GenParticleCollection::const_iterator it = genParticles->begin(); it != genParticles->end(); ++it ) 
        {
 	 
 	 //LQ
-	 if (it->pdgId()==id_LQ)
+	 if (fabs(it->pdgId())==id_LQ && it->status()==status_decayed)
 	   {
 	     //LQ.SetPtEtaPhiM(it->pt(),it->eta(),it->phi(),it->mass());	 	     
 	     LQ.SetPxPyPzE(it->px(),it->py(),it->pz(),it->energy());	 	     
@@ -307,9 +321,10 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	   }
 	 
 	 //Final state lepton from Gamma	 
-	 if ( (fabs(it->pdgId())==id_e || fabs(it->pdgId())==id_mu || fabs(it->pdgId())==id_tau) and it->status()==1 )
+	 if ( (fabs(it->pdgId())==id_e || fabs(it->pdgId())==id_mu || fabs(it->pdgId())==id_tau) and it->status()==1 and it->pdgId()*LQ_id_<0 and nLepGamma==0)
 	   {
 
+	     /*
 	     if(it->numberOfMothers()>0)
 	       {
 		 const Candidate * thismother = it->mother();
@@ -319,7 +334,7 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		     if(thismother->numberOfMothers()==0)
 		       break;
 
-		     if(thismother->pdgId()==id_LQ)
+		     if(fabs(thismother->pdgId())==id_LQ)
 		       break;
 		     
 		     if (thismother->pdgId()==id_photon 
@@ -329,30 +344,28 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 				|| fabs(thismother->mother()->pdgId())==id_d || fabs(thismother->mother()->pdgId())==id_s || fabs(thismother->mother()->pdgId())==id_b ) )  
 			 )
 		       {
-			 //lepton from gamma found
-			 nLepGamma++;
+	     */
+	     //lepton from gamma found
+	     nLepGamma++;
 
-			 LepFromGamma.SetPxPyPzE(it->px(),it->py(),it->pz(),it->energy());	 	     
+	     LepFromGamma.SetPxPyPzE(it->px(),it->py(),it->pz(),it->energy());	 	     
 
-			 lepFromGamma_E_ = LepFromGamma.E(); 
-			 lepFromGamma_mass_ = LepFromGamma.M(); 
-			 lepFromGamma_pt_ = LepFromGamma.Pt(); 
-			 lepFromGamma_eta_ = LepFromGamma.Eta(); 
-			 lepFromGamma_phi_ = LepFromGamma.Phi();  
-			 lepFromGamma_id_ = it->pdgId();  
-
-			 break;
-		       }
+	     lepFromGamma_E_ = LepFromGamma.E(); 
+	     lepFromGamma_mass_ = LepFromGamma.M(); 
+	     lepFromGamma_pt_ = LepFromGamma.Pt(); 
+	     lepFromGamma_eta_ = LepFromGamma.Eta(); 
+	     lepFromGamma_phi_ = LepFromGamma.Phi();  
+	     lepFromGamma_id_ = it->pdgId();  
+	     
+	   }
+	 /*
 		     else
 		       {
 			 thismother = thismother->mother();
 		       }
-		   }
+	 */
 
-	       }
-
-	   }
-	 
+	 /*	 
 	 //Incoming lepton
 	 if ( (fabs(it->pdgId())==id_e || fabs(it->pdgId())==id_mu || fabs(it->pdgId())==id_tau) )
 	   {
@@ -364,7 +377,7 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		 dauId = d->pdgId();
 	       }
 
-	     if(dauId==id_LQ)
+	     if(fabs(dauId)==id_LQ)
 	       {
 		 //LepIn.SetPtEtaPhiM(it->pt(),it->eta(),it->phi(),it->mass());	 
 		 LepIn.SetPxPyPzE(it->px(),it->py(),it->pz(),it->energy());	 	     
@@ -381,7 +394,9 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		 lepIn_pz_ = it->pz(); 
 	       }
 	   }
+	 */
 
+	 /*
 	 //Incoming quark
 	 if ( ( fabs(it->pdgId())==id_u || fabs(it->pdgId())==id_c || fabs(it->pdgId())==id_t 
 		|| fabs(it->pdgId())==id_d || fabs(it->pdgId())==id_s || fabs(it->pdgId())==id_b ) ) 
@@ -393,7 +408,7 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		 dauId = d->pdgId();
 	       }
 
-	     if(dauId==id_LQ)
+	     if(fabs(dauId)==id_LQ)
 	       {
 		 //QuarkIn.SetPtEtaPhiM(it->pt(),it->eta(),it->phi(),it->mass());	 
 		 QuarkIn.SetPxPyPzE(it->px(),it->py(),it->pz(),it->energy());	 	     
@@ -410,9 +425,10 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		 qIn_pz_ = it->pz();  
 	       }
 	   }
+	 */
 
 	 //Outgoing lepton
-	 if ( (fabs(it->pdgId())==id_e || fabs(it->pdgId())==id_mu || fabs(it->pdgId())==id_tau)  && it->mother()->pdgId()==id_LQ)
+	 if ( (fabs(it->pdgId())==id_e || fabs(it->pdgId())==id_mu || fabs(it->pdgId())==id_tau)  && fabs(it->mother()->pdgId())==id_LQ)
 	   {
 	     //LepOut.SetPtEtaPhiM(it->pt(),it->eta(),it->phi(),it->mass());	 
 	     LepOut.SetPxPyPzE(it->px(),it->py(),it->pz(),it->energy());	 	     
@@ -429,7 +445,7 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	 //Outgoing quark
 	 if ( ( fabs(it->pdgId())==id_u || fabs(it->pdgId())==id_c || fabs(it->pdgId())==id_t 
 		|| fabs(it->pdgId())==id_d || fabs(it->pdgId())==id_b || fabs(it->pdgId())==id_s )
-	      && it->mother()->pdgId()==id_LQ ) 
+	      && fabs(it->mother()->pdgId())==id_LQ ) 
 	   {
 	     //QuarkOut.SetPtEtaPhiM(it->pt(),it->eta(),it->phi(),it->mass());	 
 	     QuarkOut.SetPxPyPzE(it->px(),it->py(),it->pz(),it->energy());	 	     
@@ -468,15 +484,16 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	   }
 
 	 //Exit from loop when particles are found
-	 if(nLQ>0 && nLepGamma>0 && nGamma>0 && nLepIn>0 && nQuarkIn>0 && nLepOut>0 && nQuarkOut>0)
+	 //if(nLQ>0 && nLepGamma>0 && nGamma>0 && nLepIn>0 && nQuarkIn>0 && nLepOut>0 && nQuarkOut>0)
+	 if(nLQ>0 && nLepGamma>0 && nGamma>0 && nLepOut>0 && nQuarkOut>0)
 	   break;	   
 	 
        }// end loop over gen particles
 
 
      //Fill tree variables
-     lqIn_mass_ = (LepIn + QuarkIn).M();
-     lqOut_mass_ = (LepOut + QuarkOut).M();
+     //lqIn_mass_ = (LepIn + QuarkIn).M();
+     //lqOut_mass_ = (LepOut + QuarkOut).M();
 
      //Fill histograms     
      h1_LQ_mass->Fill(LQ.M());
@@ -486,12 +503,13 @@ GenAnalq::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      h1_q_eta->Fill(QuarkOut.Eta());
      h1_gamma_pt->Fill(gamma_pt_);
      
-     h2_lqIn__vs__lqOut_mass->Fill(lqOut_mass_,lqIn_mass_);
-
+     //h2_lqIn__vs__lqOut_mass->Fill(lqOut_mass_,lqIn_mass_);
+     
      //Fill only if photon is coming from proton
      if(nGamma>0 && nLepGamma>0 && gammaFromProton==1)
        {
 	 h1_gamma_pt__pos->Fill(Gamma.Pt());
+	 h1_gamma_pz__pos->Fill(Gamma.Pz());
 	 h1_lepFromGamma_pt->Fill(LepFromGamma.Pt());
 	 h1_lepFromGamma_eta->Fill(LepFromGamma.Eta());
 	 h1_xip->Fill(xi_p_);
@@ -566,6 +584,7 @@ GenAnalq::beginJob()
   h1_q_eta = fs_->make<TH1F>("h1_q_eta","h1_q_eta",100,-5,5);
   h1_gamma_pt = fs_->make<TH1F>("h1_gamma_pt","h1_gamma_pt",300,-2000,1000);
   h1_gamma_pt__pos = fs_->make<TH1F>("h1_gamma_pt__pos","h1_gamma_pt__pos",50,0,10);
+  h1_gamma_pz__pos = fs_->make<TH1F>("h1_gamma_pz__pos","h1_gamma_pz__pos",3000,-30000,30000);
   h1_lepFromGamma_pt = fs_->make<TH1F>("h1_lepFromGamma_pt","h1_lepFromGamma_pt",200,0,2000);
   h1_lepFromGamma_eta = fs_->make<TH1F>("h1_lepFromGamma_eta","h1_lepFromGamma_eta",100,-10,10);
   h1_xip = fs_->make<TH1F>("h1_xip","h1_xip",100,0,1);
@@ -575,7 +594,7 @@ GenAnalq::beginJob()
   h1_xip_over_xiLQ_minus_one__plusLep = fs_->make<TH1F>("h1_xip_over_xiLQ_minus_one__plusLep","h1_xip_over_xiLQ_minus_one__plusLep",2000,-10,10);
   h1_xip_over_xiLQ_minus_one__inPPS__plusLep = fs_->make<TH1F>("h1_xip_over_xiLQ_minus_one__inPPS__plusLep","h1_xip_over_xiLQ_minus_one__inPPS__plusLep",2000,-10,10);
 
-  h2_lqIn__vs__lqOut_mass = fs_->make<TH2F>("h2_lqIn__vs__lqOut_mass","h2_lqIn__vs__lqOut_mass",500,-10000,10000,500,-30000,30000);
+  //h2_lqIn__vs__lqOut_mass = fs_->make<TH2F>("h2_lqIn__vs__lqOut_mass","h2_lqIn__vs__lqOut_mass",500,-10000,10000,500,-30000,30000);
   h2_xip__vs__xiLQ = fs_->make<TH2F>("h2_xip__vs__xiLQ","h2_xip__vs__xiLQ",50,0,1,50,0,1);
 
   h1_LQreco_mass = fs_->make<TH1F>("h1_LQreco_mass","h1_LQreco_mass",1000,0,10000);
@@ -661,6 +680,7 @@ int GenAnalq::DefineBranches()
   outTree_->Branch("xi_LQ_plusLep"                      ,&xi_LQ_plusLep_                   ,"xi_LQ_plusLep_/F");
   outTree_->Branch("xi_LQ_wrong_plusLep"                ,&xi_LQ_wrong_plusLep_             ,"xi_LQ_wrong_plusLep_/F");
 
+  /*
   outTree_->Branch("lepIn_E"                     ,&lepIn_E_                  ,"lepIn_E_/F");
   outTree_->Branch("lepIn_mass"                  ,&lepIn_mass_               ,"lepIn_mass_/F");
   outTree_->Branch("lepIn_pt"                    ,&lepIn_pt_                 ,"lepIn_pt_/F");
@@ -680,6 +700,7 @@ int GenAnalq::DefineBranches()
   outTree_->Branch("qIn_px"                    ,&qIn_px_                 ,"qIn_px_/F");
   outTree_->Branch("qIn_py"                    ,&qIn_py_                 ,"qIn_py_/F");
   outTree_->Branch("qIn_pz"                    ,&qIn_pz_                 ,"qIn_pz_/F");
+  */
 
   outTree_->Branch("lepOut_E"                     ,&lepOut_E_                  ,"lepOut_E_/F");
   outTree_->Branch("lepOut_mass"                  ,&lepOut_mass_               ,"lepOut_mass_/F");
@@ -695,7 +716,7 @@ int GenAnalq::DefineBranches()
   outTree_->Branch("qOut_phi"                   ,&qOut_phi_                ,"qOut_phi_/F");
   outTree_->Branch("qOut_id"                    ,&qOut_id_                 ,"qOut_id_/F");
 
-  outTree_->Branch("lqIn_mass"                    ,&lqIn_mass_                 ,"lqIn_mass_/F");
+  //outTree_->Branch("lqIn_mass"                    ,&lqIn_mass_                 ,"lqIn_mass_/F");
   outTree_->Branch("lqOut_mass"                   ,&lqOut_mass_                ,"lqOut_mass_/F");
 
   return 0;
@@ -758,6 +779,7 @@ void GenAnalq::Initialize()
   xi_LQ_plusLep_                = -999;  
   xi_LQ_wrong_plusLep_          = -999;         
 
+  /*
   lepIn_E_               = -999;
   lepIn_mass_            = -999;
   lepIn_pt_              = -999; 
@@ -778,6 +800,7 @@ void GenAnalq::Initialize()
   qIn_py_              = -999; 
   qIn_pz_              = -999; 
   qIn_pz_              = -999; 
+  */
 
   lepOut_E_               = -999;
   lepOut_mass_            = -999;
@@ -793,7 +816,7 @@ void GenAnalq::Initialize()
   qOut_phi_             = -999; 
   qOut_id_              = -999; 
 
-  lqIn_mass_              = -999; 
+  //lqIn_mass_              = -999; 
   lqOut_mass_              = -999; 
 
 }
