@@ -118,7 +118,7 @@ void drawEff(string output, std::vector< TH1F* > DenVector, std::vector< TH1F* >
 }
 */
 
-void makePlots_singleLQ_compareHerwig(){
+void makePlots_singleLQ(){
 
   // general options
 
@@ -129,6 +129,7 @@ void makePlots_singleLQ_compareHerwig(){
   TFile *fileHwOld = TFile::Open("Output_HerwigOld/LeptonInducedLQ_umu_18_11_22_M3000_Lambda1p0_mod__1_ANALYSIS.root");
   TFile *fileHwNew = TFile::Open("Output_HerwigNew/LeptonInducedLQ_umu_18_11_22_M3000_Lambda1p0_mod__1_ANALYSIS.root");
   TFile *fileHwNewLO = TFile::Open("Output_HerwigNewLO/LeptonInducedLQ_mod_umu_M3000_Lambda1p0_numEvent1000_ANALYSIS.root");
+  TFile *fileHwNewLuca = TFile::Open("Output_HerwigNew-Luca-NLO/LeptonInducedLQ_umu_18_11_22_M3000_Lambda1p0-Luca-NLO_mod_numEvent1000_ANALYSIS.root");
 
   string myoutputdir = "/afs/cern.ch/user/s/santanas/www/SingleLQ/2022_11_19_SingleLQ_CompareHerwig"; 
 
@@ -149,9 +150,10 @@ void makePlots_singleLQ_compareHerwig(){
   histVec_Mall_Lambda1p0_LQ_mass.push_back( (TH1F*)fileHwOld->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_LQ_mass.push_back( (TH1F*)fileHwNew->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_LQ_mass.push_back( (TH1F*)fileHwNewLO->Get(variable.c_str())->Clone() );
-  std::vector< float > Vec_M = {3000, 3000, 3000};
-  std::vector< float > Vec_L = {1.0, 1.0, 1.0};
-  std::vector< string > Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO"};
+  histVec_Mall_Lambda1p0_LQ_mass.push_back( (TH1F*)fileHwNewLuca->Get(variable.c_str())->Clone() );
+  std::vector< float > Vec_M = {3000, 3000, 3000, 3000};
+  std::vector< float > Vec_L = {1.0, 1.0, 1.0, 1.0};
+  std::vector< string > Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO", "Hw New NLO (Luca)"};
   drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_LQ_mass",histVec_Mall_Lambda1p0_LQ_mass,Vec_M,Vec_L,Vec_label,2,"LQ mass [GeV]","Events",0,5000,false,false);
   Vec_M.clear(); Vec_L.clear();
 
@@ -160,9 +162,10 @@ void makePlots_singleLQ_compareHerwig(){
   histVec_Mall_Lambda1p0_lep_pt.push_back( (TH1F*)fileHwOld->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_lep_pt.push_back( (TH1F*)fileHwNew->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_lep_pt.push_back( (TH1F*)fileHwNewLO->Get(variable.c_str())->Clone() );
-  Vec_M = {3000, 3000, 3000};
-  Vec_L = {1.0, 1.0, 1.0};
-  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO"};
+  histVec_Mall_Lambda1p0_lep_pt.push_back( (TH1F*)fileHwNewLuca->Get(variable.c_str())->Clone() );
+  Vec_M = {3000, 3000, 3000, 3000};
+  Vec_L = {1.0, 1.0, 1.0, 1.0};
+  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO", "Hw New NLO (Luca)"};
   drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_lep_pt",histVec_Mall_Lambda1p0_lep_pt,Vec_M,Vec_L,Vec_label,2,"Lepton pt [GeV]","Events",0,3000,false,false);
   Vec_M.clear(); Vec_L.clear();
 
@@ -171,9 +174,10 @@ void makePlots_singleLQ_compareHerwig(){
   histVec_Mall_Lambda1p0_q_pt.push_back( (TH1F*)fileHwOld->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_q_pt.push_back( (TH1F*)fileHwNew->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_q_pt.push_back( (TH1F*)fileHwNewLO->Get(variable.c_str())->Clone() );
-  Vec_M = {3000, 3000, 3000};
-  Vec_L = {1.0, 1.0, 1.0};
-  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO"};
+  histVec_Mall_Lambda1p0_q_pt.push_back( (TH1F*)fileHwNewLuca->Get(variable.c_str())->Clone() );
+  Vec_M = {3000, 3000, 3000, 3000};
+  Vec_L = {1.0, 1.0, 1.0, 1.0};
+  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO", "Hw New NLO (Luca)"};
   drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_q_pt",histVec_Mall_Lambda1p0_q_pt,Vec_M,Vec_L,Vec_label,2,"Quark pt [GeV]","Events",0,3000,false,false);
   Vec_M.clear(); Vec_L.clear();
 
@@ -182,9 +186,10 @@ void makePlots_singleLQ_compareHerwig(){
   histVec_Mall_Lambda1p0_lep_eta.push_back( (TH1F*)fileHwOld->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_lep_eta.push_back( (TH1F*)fileHwNew->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_lep_eta.push_back( (TH1F*)fileHwNewLO->Get(variable.c_str())->Clone() );
-  Vec_M = {3000, 3000, 3000};
-  Vec_L = {1.0, 1.0, 1.0};
-  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO"};
+  histVec_Mall_Lambda1p0_lep_eta.push_back( (TH1F*)fileHwNewLuca->Get(variable.c_str())->Clone() );
+  Vec_M = {3000, 3000, 3000, 3000};
+  Vec_L = {1.0, 1.0, 1.0, 1.0};
+  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO", "Hw New NLO (Luca)"};
   drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_lep_eta",histVec_Mall_Lambda1p0_lep_eta,Vec_M,Vec_L,Vec_label,2,"Lepton #eta","Events",-5,5,false,false);
   Vec_M.clear(); Vec_L.clear();
 
@@ -193,9 +198,10 @@ void makePlots_singleLQ_compareHerwig(){
   histVec_Mall_Lambda1p0_q_eta.push_back( (TH1F*)fileHwOld->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_q_eta.push_back( (TH1F*)fileHwNew->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_q_eta.push_back( (TH1F*)fileHwNewLO->Get(variable.c_str())->Clone() );
-  Vec_M = {3000, 3000, 3000};
-  Vec_L = {1.0, 1.0, 1.0};
-  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO"};
+  histVec_Mall_Lambda1p0_q_eta.push_back( (TH1F*)fileHwNewLuca->Get(variable.c_str())->Clone() );
+  Vec_M = {3000, 3000, 3000, 3000};
+  Vec_L = {1.0, 1.0, 1.0, 1.0};
+  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO", "Hw New NLO (Luca)"};
   drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_q_eta",histVec_Mall_Lambda1p0_q_eta,Vec_M,Vec_L,Vec_label,2,"Quark #eta","Events",-5,5,false,false);
   Vec_M.clear(); Vec_L.clear();
 
@@ -204,9 +210,10 @@ void makePlots_singleLQ_compareHerwig(){
   histVec_Mall_Lambda1p0_xip.push_back( (TH1F*)fileHwOld->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_xip.push_back( (TH1F*)fileHwNew->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_xip.push_back( (TH1F*)fileHwNewLO->Get(variable.c_str())->Clone() );
-  Vec_M = {3000, 3000, 3000};
-  Vec_L = {1.0, 1.0, 1.0};
-  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO"};
+  histVec_Mall_Lambda1p0_xip.push_back( (TH1F*)fileHwNewLuca->Get(variable.c_str())->Clone() );
+  Vec_M = {3000, 3000, 3000, 3000};
+  Vec_L = {1.0, 1.0, 1.0, 1.0};
+  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO", "Hw New NLO (Luca)"};
   drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_xip",histVec_Mall_Lambda1p0_xip,Vec_M,Vec_L,Vec_label,2,"Proton #xi = #Delta p_{z} / p_{z}","Events",0,1,false,false);
   Vec_M.clear(); Vec_L.clear();
 
@@ -215,9 +222,10 @@ void makePlots_singleLQ_compareHerwig(){
   histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS.push_back( (TH1F*)fileHwOld->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS.push_back( (TH1F*)fileHwNew->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS.push_back( (TH1F*)fileHwNewLO->Get(variable.c_str())->Clone() );
-  Vec_M = {3000, 3000, 3000};
-  Vec_L = {1.0, 1.0, 1.0};
-  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO"};
+  histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS.push_back( (TH1F*)fileHwNewLuca->Get(variable.c_str())->Clone() );
+  Vec_M = {3000, 3000, 3000, 3000};
+  Vec_L = {1.0, 1.0, 1.0, 1.0};
+  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO", "Hw New NLO (Luca)"};
   drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS",histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS,Vec_M,Vec_L,Vec_label,4,"#xi(proton)/#xi(LQ) -1 (within PPS acceptance, #xi<0.2)","Events",-1.,5.,false,false);
   Vec_M.clear(); Vec_L.clear();
 
@@ -226,9 +234,10 @@ void makePlots_singleLQ_compareHerwig(){
   histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS__plusLep.push_back( (TH1F*)fileHwOld->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS__plusLep.push_back( (TH1F*)fileHwNew->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS__plusLep.push_back( (TH1F*)fileHwNewLO->Get(variable.c_str())->Clone() );
-  Vec_M = {3000, 3000, 3000};
-  Vec_L = {1.0, 1.0, 1.0};
-  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO"};
+  histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS__plusLep.push_back( (TH1F*)fileHwNewLuca->Get(variable.c_str())->Clone() );
+  Vec_M = {3000, 3000, 3000, 3000};
+  Vec_L = {1.0, 1.0, 1.0, 1.0};
+  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO", "Hw New NLO (Luca)"};
   drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS__plusLep",histVec_Mall_Lambda1p0_xip_over_xiLQ_minus_one__inPPS__plusLep,Vec_M,Vec_L,Vec_label,1,"#xi(proton)/#xi(LQ+Lepton) -1 (within PPS acceptance, #xi<0.2)","Events (normalized)",-0.5,0.5,false,true);
   Vec_M.clear(); Vec_L.clear();
 
@@ -237,9 +246,10 @@ void makePlots_singleLQ_compareHerwig(){
   histVec_Mall_Lambda1p0_gamma_pt__pos.push_back( (TH1F*)fileHwOld->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_gamma_pt__pos.push_back( (TH1F*)fileHwNew->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_gamma_pt__pos.push_back( (TH1F*)fileHwNewLO->Get(variable.c_str())->Clone() );
-  Vec_M = {3000, 3000, 3000};
-  Vec_L = {1.0, 1.0, 1.0};
-  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO"};
+  histVec_Mall_Lambda1p0_gamma_pt__pos.push_back( (TH1F*)fileHwNewLuca->Get(variable.c_str())->Clone() );
+  Vec_M = {3000, 3000, 3000, 3000};
+  Vec_L = {1.0, 1.0, 1.0, 1.0};
+  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO", "Hw New NLO (Luca)"};
   drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_gamma_pt__pos",histVec_Mall_Lambda1p0_gamma_pt__pos,Vec_M,Vec_L,Vec_label,2,"Photon pt [GeV]","Events",0,10,false,false);
   Vec_M.clear(); Vec_L.clear();
 
@@ -248,9 +258,10 @@ void makePlots_singleLQ_compareHerwig(){
   histVec_Mall_Lambda1p0_gamma_pz__pos.push_back( (TH1F*)fileHwOld->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_gamma_pz__pos.push_back( (TH1F*)fileHwNew->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_gamma_pz__pos.push_back( (TH1F*)fileHwNewLO->Get(variable.c_str())->Clone() );
-  Vec_M = {3000, 3000, 3000};
-  Vec_L = {1.0, 1.0, 1.0};
-  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO"};
+  histVec_Mall_Lambda1p0_gamma_pz__pos.push_back( (TH1F*)fileHwNewLuca->Get(variable.c_str())->Clone() );
+  Vec_M = {3000, 3000, 3000, 3000};
+  Vec_L = {1.0, 1.0, 1.0, 1.0};
+  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO", "Hw New NLO (Luca)"};
   drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_gamma_pz__pos",histVec_Mall_Lambda1p0_gamma_pz__pos,Vec_M,Vec_L,Vec_label,2,"Photon pz [GeV]","Events",-30000,30000,false,false);
   Vec_M.clear(); Vec_L.clear();
 
@@ -259,9 +270,10 @@ void makePlots_singleLQ_compareHerwig(){
   histVec_Mall_Lambda1p0_LQreco_mass.push_back( (TH1F*)fileHwOld->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_LQreco_mass.push_back( (TH1F*)fileHwNew->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_LQreco_mass.push_back( (TH1F*)fileHwNewLO->Get(variable.c_str())->Clone() );
-  Vec_M = {3000, 3000, 3000};
-  Vec_L = {1.0, 1.0, 1.0};
-  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO"};
+  histVec_Mall_Lambda1p0_LQreco_mass.push_back( (TH1F*)fileHwNewLuca->Get(variable.c_str())->Clone() );
+  Vec_M = {3000, 3000, 3000, 3000};
+  Vec_L = {1.0, 1.0, 1.0, 1.0};
+  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO", "Hw New NLO (Luca)"};
   drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_LQreco_mass",histVec_Mall_Lambda1p0_LQreco_mass,Vec_M,Vec_L,Vec_label,2,"LQreco mass [GeV]","Events",0,5000,false,false);
   Vec_M.clear(); Vec_L.clear();
 
@@ -270,9 +282,10 @@ void makePlots_singleLQ_compareHerwig(){
   histVec_Mall_Lambda1p0_jet_pt.push_back( (TH1F*)fileHwOld->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_jet_pt.push_back( (TH1F*)fileHwNew->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_jet_pt.push_back( (TH1F*)fileHwNewLO->Get(variable.c_str())->Clone() );
-  Vec_M = {3000, 3000, 3000};
-  Vec_L = {1.0, 1.0, 1.0};
-  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO"};
+  histVec_Mall_Lambda1p0_jet_pt.push_back( (TH1F*)fileHwNewLuca->Get(variable.c_str())->Clone() );
+  Vec_M = {3000, 3000, 3000, 3000};
+  Vec_L = {1.0, 1.0, 1.0, 1.0};
+  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO", "Hw New NLO (Luca)"};
   drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_jet_pt",histVec_Mall_Lambda1p0_jet_pt,Vec_M,Vec_L,Vec_label,2,"Jet pt [GeV]","Events",0,3000,false,false);
   Vec_M.clear(); Vec_L.clear();
 
@@ -281,9 +294,10 @@ void makePlots_singleLQ_compareHerwig(){
   histVec_Mall_Lambda1p0_jet_eta.push_back( (TH1F*)fileHwOld->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_jet_eta.push_back( (TH1F*)fileHwNew->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_jet_eta.push_back( (TH1F*)fileHwNewLO->Get(variable.c_str())->Clone() );
-  Vec_M = {3000, 3000, 3000};
-  Vec_L = {1.0, 1.0, 1.0};
-  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO"};
+  histVec_Mall_Lambda1p0_jet_eta.push_back( (TH1F*)fileHwNewLuca->Get(variable.c_str())->Clone() );
+  Vec_M = {3000, 3000, 3000, 3000};
+  Vec_L = {1.0, 1.0, 1.0, 1.0};
+  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO", "Hw New NLO (Luca)"};
   drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_jet_eta",histVec_Mall_Lambda1p0_jet_eta,Vec_M,Vec_L,Vec_label,2,"Jet #eta","Events",-5,5,false,false);
   Vec_M.clear(); Vec_L.clear();
 
@@ -292,9 +306,10 @@ void makePlots_singleLQ_compareHerwig(){
   histVec_Mall_Lambda1p0_lepFromGamma_pt.push_back( (TH1F*)fileHwOld->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_lepFromGamma_pt.push_back( (TH1F*)fileHwNew->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_lepFromGamma_pt.push_back( (TH1F*)fileHwNewLO->Get(variable.c_str())->Clone() );
-  Vec_M = {3000, 3000, 3000};
-  Vec_L = {1.0, 1.0, 1.0};
-  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO"};
+  histVec_Mall_Lambda1p0_lepFromGamma_pt.push_back( (TH1F*)fileHwNewLuca->Get(variable.c_str())->Clone() );
+  Vec_M = {3000, 3000, 3000, 3000};
+  Vec_L = {1.0, 1.0, 1.0, 1.0};
+  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO", "Hw New NLO (Luca)"};
   drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_lepFromGamma_pt",histVec_Mall_Lambda1p0_lepFromGamma_pt,Vec_M,Vec_L,Vec_label,2,"Lepton from Gamma pt [GeV]","Events",0,3000,false,false);
   Vec_M.clear(); Vec_L.clear();
 
@@ -303,9 +318,10 @@ void makePlots_singleLQ_compareHerwig(){
   histVec_Mall_Lambda1p0_lepFromGamma_eta.push_back( (TH1F*)fileHwOld->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_lepFromGamma_eta.push_back( (TH1F*)fileHwNew->Get(variable.c_str())->Clone() );
   histVec_Mall_Lambda1p0_lepFromGamma_eta.push_back( (TH1F*)fileHwNewLO->Get(variable.c_str())->Clone() );
-  Vec_M = {3000, 3000, 3000};
-  Vec_L = {1.0, 1.0, 1.0};
-  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO"};
+  histVec_Mall_Lambda1p0_lepFromGamma_eta.push_back( (TH1F*)fileHwNewLuca->Get(variable.c_str())->Clone() );
+  Vec_M = {3000, 3000, 3000, 3000};
+  Vec_L = {1.0, 1.0, 1.0, 1.0};
+  Vec_label = {"Hw Old NLO", "Hw New NLO", "Hw New LO", "Hw New NLO (Luca)"};
   drawHisto(myoutputdir+"/histVec_Mall_Lambda1p0_lepFromGamma_eta",histVec_Mall_Lambda1p0_lepFromGamma_eta,Vec_M,Vec_L,Vec_label,2,"Lepton from Gamma #eta","Events",-10,10,false,false);
   Vec_M.clear(); Vec_L.clear();
 
