@@ -21,7 +21,7 @@
 #include <memory>
 
 // user include files
-#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/Framework/interface/Run.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
@@ -38,6 +38,27 @@
 #include "DataFormats/JetReco/interface/GenJet.h"
 #include "DataFormats/METReco/interface/GenMETCollection.h"
 #include "DataFormats/METReco/interface/GenMET.h"
+//#include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
+
+
+//#include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
+//#include "SimDataFormats/GeneratorProducts/interface/HepMC3Product.h"
+
+//#include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
+//#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+//#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct3.h"
+//#include "SimDataFormats/GeneratorProducts/interface/GenLumiInfoHeader.h"
+
+#include "SimDataFormats/GeneratorProducts/interface/LHERunInfoProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+
+#include "GeneratorInterface/LHEInterface/interface/LHERunInfo.h"
+//#include "GeneratorInterface/LHEInterface/interface/LHEEvent.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/Framework/interface/LuminosityBlock.h"
+
 
 //
 // class declaration
@@ -83,7 +104,7 @@ class GenAnalq : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
    private:
       virtual void beginJob() override;
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-      virtual void endJob() override;
+      virtual void endJob( const  edm::Run&, const edm::EventSetup&);
       void Initialize();
 
       // ----------member data ---------------------------
@@ -93,6 +114,7 @@ class GenAnalq : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
   edm::EDGetTokenT<reco::GenParticleCollection> genPartInputToken_;
   edm::EDGetTokenT<reco::GenJetCollection> genJetsAK4InputToken_;
   edm::EDGetTokenT<reco::GenJetCollection> genJetsAK8InputToken_;
+  edm::EDGetTokenT<GenRunInfoProduct> genXsecInputToken_;
 
   TH1F *h1_LQ_mass, *h1_lep_pt, *h1_lep_eta, *h1_q_pt, *h1_q_eta, *h1_gamma_pt, *h1_gamma_pt__pos, *h1_gamma_pz__pos, *h1_lepFromGamma_pt, *h1_lepFromGamma_eta;
   TH1F *h1_xip, *h1_xiLQ, *h1_xip_over_xiLQ_minus_one, *h1_xip_over_xiLQ_minus_one__inPPS, *h1_xip_over_xiLQ_minus_one__plusLep, *h1_xip_over_xiLQ_minus_one__inPPS__plusLep; 
@@ -154,6 +176,7 @@ GenAnalq::GenAnalq(const edm::ParameterSet& iConfig)
   genPartInputToken_ = (consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genParticlesInputTag")));
   genJetsAK4InputToken_ = (consumes<reco::GenJetCollection>(iConfig.getParameter<edm::InputTag>("genJetsAK4InputTag")));
   genJetsAK8InputToken_ = (consumes<reco::GenJetCollection>(iConfig.getParameter<edm::InputTag>("genJetsAK8InputTag")));
+  genXsecInputToken_ = (consumes<GenRunInfoProduct>(iConfig.getParameter<edm::InputTag>("genXsecInputTag")));
 }
 
 
@@ -608,8 +631,10 @@ GenAnalq::beginJob()
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
-GenAnalq::endJob() 
+GenAnalq::endJob(const edm::Run& iRun, const edm::EventSetup&) 
 {
+edm::Handle<GenRunInfoProduct> genRunInfo;
+iRun.getByLabel("generator", genRunInfo);
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
