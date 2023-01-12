@@ -21,7 +21,7 @@
 #include <memory>
 
 // user include files
-#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/Framework/interface/Run.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
@@ -38,6 +38,27 @@
 #include "DataFormats/JetReco/interface/GenJet.h"
 #include "DataFormats/METReco/interface/GenMETCollection.h"
 #include "DataFormats/METReco/interface/GenMET.h"
+//#include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
+
+
+//#include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
+//#include "SimDataFormats/GeneratorProducts/interface/HepMC3Product.h"
+
+//#include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
+//#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+//#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct3.h"
+//#include "SimDataFormats/GeneratorProducts/interface/GenLumiInfoHeader.h"
+
+#include "SimDataFormats/GeneratorProducts/interface/LHERunInfoProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+
+#include "GeneratorInterface/LHEInterface/interface/LHERunInfo.h"
+//#include "GeneratorInterface/LHEInterface/interface/LHEEvent.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/Framework/interface/LuminosityBlock.h"
+
 
 //
 // class declaration
@@ -71,8 +92,12 @@
 using namespace std;
 using namespace edm;
 using namespace reco;
+using namespace lhef;
 
-class GenAnalq : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
+
+class GenAnalq : public edm::EDAnalyzer  {
+//class GenAnalq : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
+//class GenAnalq : public edm::EDAnalyzer<edm::SharedResources>  {
    public:
       explicit GenAnalq(const edm::ParameterSet&);
       ~GenAnalq();
@@ -82,8 +107,10 @@ class GenAnalq : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 
    private:
       virtual void beginJob() override;
+      virtual void beginRun(const edm::Run&, const edm::EventSetup&) override; 
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-      virtual void endJob() override;
+      //virtual void endJob() override; 
+      virtual void endRun(const edm::Run&, const edm::EventSetup&) override; 
       void Initialize();
 
       // ----------member data ---------------------------
@@ -93,6 +120,8 @@ class GenAnalq : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
   edm::EDGetTokenT<reco::GenParticleCollection> genPartInputToken_;
   edm::EDGetTokenT<reco::GenJetCollection> genJetsAK4InputToken_;
   edm::EDGetTokenT<reco::GenJetCollection> genJetsAK8InputToken_;
+  edm::EDGetTokenT<GenRunInfoProduct> genXsecInputToken_;
+  edm::EDGetTokenT<LHERunInfoProduct> tokenLHERunInfo_; 
 
   TH1F *h1_LQ_mass, *h1_lep_pt, *h1_lep_eta, *h1_q_pt, *h1_q_eta, *h1_gamma_pt, *h1_gamma_pt__pos, *h1_gamma_pz__pos, *h1_lepFromGamma_pt, *h1_lepFromGamma_eta;
   TH1F *h1_xip, *h1_xiLQ, *h1_xip_over_xiLQ_minus_one, *h1_xip_over_xiLQ_minus_one__inPPS, *h1_xip_over_xiLQ_minus_one__plusLep, *h1_xip_over_xiLQ_minus_one__inPPS__plusLep; 
@@ -101,6 +130,7 @@ class GenAnalq : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
   TH1F *h1_LQreco_mass, *h1_jet_pt, *h1_jet_eta;
 
   TTree *outTree_;
+  TTree *xSecTree_;
   int event_;
   float LQ_E_,LQ_mass_, LQ_pt_, LQ_eta_, LQ_phi_, LQ_id_, LQ_px_, LQ_py_, LQ_pz_;
   float gamma_E_,gamma_mass_, gamma_pt_, gamma_eta_, gamma_phi_, gamma_id_, gamma_from_p_, gamma_px_, gamma_py_, gamma_pz_;
@@ -115,6 +145,8 @@ class GenAnalq : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
   float qOut_E_,qOut_mass_, qOut_pt_, qOut_eta_, qOut_phi_, qOut_id_;
   //float lqIn_mass_, lqOut_mass_;
   float lqOut_mass_;
+  float xSec_, xSec_err_;
+
 
   int id_p = 2212;
   int id_LQ = 9911561;
@@ -150,10 +182,12 @@ GenAnalq::GenAnalq(const edm::ParameterSet& iConfig)
 
 {
    //now do what ever initialization is needed
-  usesResource("TFileService");
+  //usesResource("TFileService");
+  tokenLHERunInfo_ = (consumes<LHERunInfoProduct,edm::InRun>(iConfig.getUntrackedParameter<edm::InputTag>("moduleLabel", std::string("source")) ) ),
   genPartInputToken_ = (consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genParticlesInputTag")));
   genJetsAK4InputToken_ = (consumes<reco::GenJetCollection>(iConfig.getParameter<edm::InputTag>("genJetsAK4InputTag")));
   genJetsAK8InputToken_ = (consumes<reco::GenJetCollection>(iConfig.getParameter<edm::InputTag>("genJetsAK8InputTag")));
+  genXsecInputToken_ = (consumes<GenRunInfoProduct>(iConfig.getUntrackedParameter<edm::InputTag>("moduleLabel", std::string("generator"))));
 }
 
 
@@ -603,13 +637,51 @@ GenAnalq::beginJob()
 
   // Book the tree and define branches
   outTree_ = fs_->make<TTree>("events","events");
+  xSecTree_=fs_->make<TTree>("xSec","xSec");
   DefineBranches();
 }
 
-// ------------ method called once each job just after ending the event loop  ------------
-void 
-GenAnalq::endJob() 
+
+void GenAnalq::beginRun(edm::Run const& iRun, edm::EventSetup const&) 
 {
+
+
+}
+// ------------ method called once each job just after ending the event loop  ------------
+//void GenAnalq::endJob() 
+void GenAnalq::endRun(edm::Run const& iRun, edm::EventSetup const&) 
+{
+	//Handle<GenRunInfoProduct> genRunInfo;
+	//iRun.getByToken(genXsecInputToken_, genRunInfo);
+	Initialize();	
+
+	//const GenRunInfoProduct::XSec thisXSec_ = genRunInfo->internalXSec();
+	//const GenRunInfoProduct::XSec thisXSecExt_ = genRunInfo->externalXSecLO();
+	//std::cout<<std::setw(14)<<std::fixed<< thisXSec_.value()<<std::endl;	
+	//std::cout<<std::setw(14)<<std::fixed<< thisXSecExt_.value()<<std::endl;	
+
+
+    	Handle<LHERunInfoProduct> run;
+    	iRun.getByToken( tokenLHERunInfo_, run );
+
+	
+	const lhef::HEPRUP thisHeprup_ = run->heprup();
+
+	for ( unsigned int iSize = 0 ; iSize < thisHeprup_.XSECUP.size() ; iSize++ ) {
+		std::cout  << std::setw(14) << std::fixed << thisHeprup_.XSECUP[iSize]
+                 << std::setw(14) << std::fixed << thisHeprup_.XERRUP[iSize]
+                 << std::setw(14) << std::fixed << thisHeprup_.XMAXUP[iSize]
+                 << std::setw(14) << std::fixed << thisHeprup_.LPRUP[iSize] 
+                 << std::endl;
+		
+
+		xSec_ = thisHeprup_.XSECUP[iSize];
+		xSec_err_ = thisHeprup_.XERRUP[iSize];
+
+	}
+		
+   xSecTree_->Fill();     
+
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
@@ -679,6 +751,8 @@ int GenAnalq::DefineBranches()
   outTree_->Branch("xi_LQ_wrong"                ,&xi_LQ_wrong_             ,"xi_LQ_wrong_/F");
   outTree_->Branch("xi_LQ_plusLep"                      ,&xi_LQ_plusLep_                   ,"xi_LQ_plusLep_/F");
   outTree_->Branch("xi_LQ_wrong_plusLep"                ,&xi_LQ_wrong_plusLep_             ,"xi_LQ_wrong_plusLep_/F");
+  xSecTree_->Branch("xSec"                ,&xSec_             ,"xSec_/F");
+  xSecTree_->Branch("xSec_err"                ,&xSec_err_             ,"xSec_err_/F");
 
   /*
   outTree_->Branch("lepIn_E"                     ,&lepIn_E_                  ,"lepIn_E_/F");
@@ -778,6 +852,8 @@ void GenAnalq::Initialize()
   xi_LQ_wrong_          = -999;         
   xi_LQ_plusLep_                = -999;  
   xi_LQ_wrong_plusLep_          = -999;         
+  xSec_          = -999;         
+  xSec_err_          = -999;         
 
   /*
   lepIn_E_               = -999;
